@@ -1,34 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_LEN_STR 51
-#define MAX_NUM_STR 20
+#include <string.h>
 
-char * AddressElem(char * data, int j, int i);
+#define MAX_LEN_STR 50
+#define MAX_NUM_STR 25
 
-int ReadFile(FILE * fp, char * text);
-void PrintText(char * text, int size);
+int ReadFile(FILE * fp, char * text[]);
 
-char * AddressElem(char * data, int j, int i)
-{
-	return data + j * MAX_LEN_STR + i;
-}
+void PrintText(char * text[], int size);
 
-int ReadFile(FILE * fp, char * text)
-{
-    int size = 0;
-    
-    while(fgets(AddressElem(text, size, 0), MAX_LEN_STR, fp) != NULL)
-        size++;
-    return size;
-}
-
-void PrintText(char * text, int size)
-{
-    for(int i = 0; i < size; i++)
-        printf("%s", AddressElem(text, i, 0));
-
-    printf("\n");
-}
+void ClearText(char *text[], int size);
 
 int main(int argc, char *argv[])
 {
@@ -46,11 +27,13 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    char *text = (char *)calloc(MAX_NUM_STR, sizeof(char) * MAX_LEN_STR);
+    char *text[MAX_NUM_STR] = {};
 
-    PrintText(text, ReadFile(fp, text));
-
-    free(text);
+    int size = ReadFile(fp, text);
+    
+    PrintText(text, size);
+    
+    ClearText(text, size);
 
     if (fclose(fp) != 0)
         fprintf(stderr, "File close error: <%s>\n", filename);
@@ -58,3 +41,30 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+int ReadFile(FILE * fp, char * text[])
+{
+    int i = 0;
+
+    char buffer[MAX_LEN_STR] = {};
+    
+    while(fgets(buffer, MAX_LEN_STR, fp) != NULL) {
+        text[i] = strcpy((char *)calloc(strlen(buffer) + 1, sizeof(char)), buffer);
+        i++;
+    }
+    
+    return i;
+}
+
+void PrintText(char * text[], int size)
+{
+    for(int i = 0; i < size; i++)
+        printf("%s", text[i]);
+
+    printf("\n");
+}
+
+void ClearText(char *text[], int size)
+{
+    for(int i = 0; i < size; i++)
+        free(text[i]);
+}
