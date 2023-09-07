@@ -3,15 +3,37 @@
 #include <string.h>
 
 #define MAX_LEN_STR 50
-#define MAX_NUM_STR 25
 
-int ReadFile(FILE * fp, char * text[]);
+void ReadFile(FILE *fp, char *text[], int *size);
 
-void PrintText(char * text[], int size);
+void PrintText(char *text[], int size);
 
 void ClearText(char *text[], int size);
 
+FILE *InitFile(int argc, char *argv[]);
+void  CloseFile(FILE * fp, char * filename);
+
 int main(int argc, char *argv[])
+{
+    FILE * fp = InitFile(argc, argv);
+
+    int n_lines = 0;
+    fscanf(fp, "%d\n", &n_lines);
+
+    char **text = (char **)calloc(n_lines, sizeof(char *));
+    
+    ReadFile(fp, text, &n_lines);
+
+    PrintText(text, n_lines);
+    
+    ClearText(text, n_lines);
+
+    CloseFile(fp, argv[1]);
+
+    return 0;
+}
+
+FILE * InitFile(int argc, char *argv[])
 {
     FILE *fp;
     
@@ -20,42 +42,27 @@ int main(int argc, char *argv[])
         exit(0);
     }
     
-    char *filename = argv[1];
-    
     if ((fp = fopen(argv[1], "r")) == NULL){
-        fprintf(stderr, "Сan't open file: <%s>\n", filename);
+        fprintf(stderr, "Сan't open file: <%s>\n", argv[1]);
         exit(0);
     }
-
-    char *text[MAX_NUM_STR] = {};
-
-    int size = ReadFile(fp, text);
-    
-    PrintText(text, size);
-    
-    ClearText(text, size);
-
-    if (fclose(fp) != 0)
-        fprintf(stderr, "File close error: <%s>\n", filename);
-    
-    return 0;
+    return fp;
 }
 
-int ReadFile(FILE * fp, char * text[])
+void ReadFile(FILE *fp, char *text[], int *size)
 {
     int i = 0;
 
     char buffer[MAX_LEN_STR] = {};
     
-    while(fgets(buffer, MAX_LEN_STR, fp) != NULL) {
+    while(fgets(buffer, MAX_LEN_STR, fp) != NULL && (i < *size) ) {
         text[i] = strdup(buffer);
         i++;
     }
-    
-    return i;
+    *size = i;
 }
 
-void PrintText(char * text[], int size)
+void PrintText(char *text[], int size)
 {
     for(int i = 0; i < size; i++)
         printf("%s", text[i]);
@@ -67,4 +74,12 @@ void ClearText(char *text[], int size)
 {
     for(int i = 0; i < size; i++)
         free(text[i]);
+    
+    free(text);
+}
+
+void CloseFile(FILE * fp, char * filename)
+{
+    if (fclose(fp) != 0)
+        fprintf(stderr, "File close error: <%s>\n", filename);
 }
