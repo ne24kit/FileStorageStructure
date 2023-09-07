@@ -48,7 +48,7 @@ int ReadFile(FILE * fp, char * text[])
     char buffer[MAX_LEN_STR] = {};
     
     while(fgets(buffer, MAX_LEN_STR, fp) != NULL) {
-        text[i] = strcpy((char *)calloc(strlen(buffer) + 1, sizeof(char)), buffer);
+        text[i] = strdup(buffer);
         i++;
     }
     
